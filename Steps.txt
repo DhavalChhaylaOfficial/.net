@@ -1,0 +1,21 @@
+ASP.NET Web Application (.Net Framwork)
+
+Create Table in database
+-> View -> SQL server object exp
+-> LocalDB -> Databases -> New-Database
+-> Database_Name/Tables/Create table
+
+-> Right Click App_Name/ Add / Web Form
+-> goto Web.config
+-> write below code in configuration for activate validation
+
+<appSettings>
+<add key="ValidationSettings:UnobtrusiveValidationMode" value="None" />
+</appSettings>
+
+Create Stored Procedure
+-> View/SQL server object exp
+-> LocalDB/Databases/Your_Database/ProgramAbility/StoredProcedure 
+-> Right click on that and create new
+
+
