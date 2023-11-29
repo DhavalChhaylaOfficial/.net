@@ -322,4 +322,28 @@ step 8 : BookDetails code (c#) (don't forget to change connection string)
 }
 
 
-step 9 :
+step 9 : create stored procedure
+right click on stored procedure folder under mdf file and paste below code.
+CREATE PROCEDURE [dbo].[BookProcedure]
+	@id int = 0,
+	@title varchar(20) = NULL,
+	@auth varchar(20) =NULL,
+	@desc varchar(20) =NULL,
+	@price int =0,
+	@op int = 0 --1.ins 2. upd 3.del 4 sel 5. search
+AS
+	BEGIN
+	if @op =1
+	INSERT into Book(btitle,bauthor,bdescription,bprice) values(@title,@auth,@desc,@price);
+	if @op=2
+	update Book set btitle=@title,bauthor=@auth,bdescription=@desc,bprice=@price where bid=@id;
+	if @op=3
+	delete from Book where bid=@id;
+	if @op=4
+	select * from Book;
+	if @op=5
+	select * from Book where btitle=@title OR bauthor=@auth;
+	END
+RETURN 0
+
+step 10 : run file and don't forget to change connection string. 
