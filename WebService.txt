@@ -1,0 +1,28 @@
+step 1 : create web service 
+right click on your solution name then Add -> new item -> web service (ASMX)
+
+step : 2 
+paste code below  [WebMethod]
+public int GetStudentTotal(string sid)
+        {
+            SqlConnection sc = new SqlConnection(@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\megha\Downloads\StudentDetails.mdf;Integrated Security=True;Connect Timeout=30");
+            SqlCommand cmd = new SqlCommand("select (sub1mark+sub2mark+sub3mark) from Student where id = @sid", sc);
+            cmd.Parameters.AddWithValue("@sid",sid);
+            SqlDataReader sdr;
+            sc.Open();
+            sdr=cmd.ExecuteReader();
+            sdr.Read();
+            int i = Convert.ToInt32(sdr[0]);
+            sc.Close();
+            return i;
+        }
+
+
+-> code for sum of 2 num
+   public int Add(int num1, int num2)
+    {
+        return num1 + num2;
+    }
+
+step : 3
+run file and don't forget to change connection string
