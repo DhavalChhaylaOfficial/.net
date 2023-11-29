@@ -1,0 +1,325 @@
+step 1 : database connection 
+view -> server explorer -> add connection -> data source = Microsoft SQL Server Database File (SqlClient).
+
+step 2 : modify web-config
+<appSettings>
+		<add key="ValidationSettings:UnobtrusiveValidationMode" value="None"/>
+	</appSettings>
+
+step 3 : add webpage for home
+right click on solution name -> add -> web form
+
+step 4 : homepage code (html)
+ <div>
+            <asp:GridView ID="gv_list_books" runat="server" OnRowDataBound="gv_list_books_RowDataBound" OnSelectedIndexChanged="gv_list_books_SelectedIndexChanged"></asp:GridView>
+            Search A Book:
+            <asp:TextBox ID="txt_search" runat="server"></asp:TextBox>
+            <br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <asp:Button ID="btnSearch" runat="server" Text="Search" OnClick="btnSearch_Click" />
+            &nbsp;&nbsp;&nbsp;
+            <asp:Button ID="btnNext" runat="server" Text="Next" OnClick="btnNext_Click" />
+        </div>
+
+step : 5 homepage code (c#) (don't forget to change connection string)
+ public SqlConnection sc = new SqlConnection(@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\megha\Downloads\InternalPractical.mdf;Integrated Security=True;Connect Timeout=30");
+        public SqlCommand cmd = new SqlCommand();
+        public SqlDataReader sdr;
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            cmd.Connection = sc;
+            cmd.CommandText = "BookProcedure";
+            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+            if (!IsPostBack)
+            {
+
+                FillGrid();
+               
+            }
+        }
+
+        private void FillGrid()
+        {
+            try
+            {
+                sc.Open();
+                cmd.Connection = sc;
+                cmd.CommandText = "BookProcedure";
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.Parameters.Clear();
+                cmd.Parameters.AddWithValue("@op", 4);
+                sdr = cmd.ExecuteReader();
+                gv_list_books.DataSource = sdr;
+                gv_list_books.DataBind();
+
+            }
+            catch (Exception ex)
+            {
+
+                Response.Write(ex.Message);
+            }
+            finally
+            {
+                sc.Close();
+
+            }
+        }
+
+        protected void btnSearch_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                sc.Open();
+                cmd.Connection = sc;
+                cmd.CommandText = "BookProcedure";
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.Parameters.Clear();
+                cmd.Parameters.AddWithValue("@title",txt_search.Text);
+                cmd.Parameters.AddWithValue("@auth",txt_search.Text);
+                cmd.Parameters.AddWithValue("@op", 5);
+                sdr = cmd.ExecuteReader();
+                gv_list_books.DataSource = sdr;
+                gv_list_books.DataBind();
+                if (!sdr.HasRows)
+                {
+                    Response.Write("No Such Book Found");
+                }
+
+            }
+            catch (Exception ex)
+            {
+
+                Response.Write(ex.Message);
+            }
+            finally
+            {
+                sc.Close();
+                
+            }
+        }
+
+        protected void gv_list_books_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        protected void gv_list_books_RowDataBound(object sender, GridViewRowEventArgs e)
+        {
+            if (e.Row.RowIndex >= 0)
+            {
+                if (Convert.ToInt32(e.Row.Cells[4].Text) < 50)
+                {
+                    e.Row.Cells[4].ForeColor = System.Drawing.Color.Red;
+                    
+                }
+
+            }
+        }
+
+        protected void btnNext_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("BookDetails.aspx");
+        }
+    }
+}
+
+
+step 6 : add BookDetails page
+right click on solution name -> add -> web form
+
+step 7 : BookDetails code (html)
+ <div>
+            ID:<asp:DropDownList ID="DropDownListID" runat="server" OnSelectedIndexChanged="DropDownListID_SelectedIndexChanged"></asp:DropDownList>
+            <br />
+            <br />
+            Title: <asp:TextBox ID="txt_title" runat="server"></asp:TextBox>
+            <br />
+            <br />
+            Author: <asp:TextBox ID="txt_author" runat="server"></asp:TextBox>
+            <asp:RegularExpressionValidator ID="regvauth" runat="server" ControlToValidate="txt_author" Display="Dynamic" ValidationExpression="\D*" ErrorMessage="No Digits Allowed"></asp:RegularExpressionValidator>
+            <br />
+            <br />
+            Description: <asp:TextBox ID="txt_description" runat="server"></asp:TextBox>
+            <br />
+            <br />
+            Price:
+            <asp:TextBox ID="txt_price" runat="server"></asp:TextBox>
+            <asp:RegularExpressionValidator ID="regvprice" runat="server" ErrorMessage="Only Digits Allowed" ControlToValidate="txt_price" Display="Dynamic" ValidationExpression="\d*"></asp:RegularExpressionValidator>
+            <br />
+            <br />
+&nbsp;&nbsp;&nbsp;
+            <asp:Button ID="btnAdd" runat="server" Text="Add" Height="29px" OnClick="btnAdd_Click" Width="75px" />
+            &nbsp;&nbsp;&nbsp;
+            <asp:Button ID="btnUpdate" runat="server" Text="Update" OnClick="btnUpdate_Click" Width="77px" />
+            &nbsp;&nbsp;&nbsp;
+            <asp:Button ID="btnRemove" runat="server" Text="Remove" OnClick="btnRemove_Click" />
+        </div>
+
+step 8 : BookDetails code (c#) (don't forget to change connection string)
+ public SqlConnection sc = new SqlConnection(@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\megha\Downloads\InternalPractical.mdf;Integrated Security=True;Connect Timeout=30");
+        public SqlCommand cmd = new SqlCommand();
+        public SqlDataReader sdr;
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            cmd.Connection = sc;
+            cmd.CommandText = "BookProcedure";
+            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+            if (!IsPostBack)
+            {
+                FillDropDown();
+            }
+        }
+
+        protected void btnAdd_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                sc.Open();
+                cmd.Parameters.Clear();
+                cmd.Connection = sc;
+                cmd.CommandText = "BookProcedure";
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                
+                cmd.Parameters.AddWithValue("@title", txt_title.Text);
+                cmd.Parameters.AddWithValue("@auth", txt_author.Text);
+                cmd.Parameters.AddWithValue("@desc", txt_description.Text);
+                cmd.Parameters.AddWithValue("@price", txt_price.Text);
+                cmd.Parameters.AddWithValue("@op", 1);
+                int i = cmd.ExecuteNonQuery();
+                if (i > 0)
+                {
+                    Response.Write("Record Inserted");
+                    txt_title.Text = "";
+                    txt_author.Text = "";
+                    txt_description.Text = "";
+                    txt_price.Text = "";
+                    
+                }
+                else
+                {
+                    Response.Write("Something Went Wrong");
+                }
+            }
+            catch (Exception ex)
+            {
+                Response.Write(ex.ToString());
+            }
+            finally
+            {
+                sc.Close();
+                FillDropDown();
+            }
+        }
+
+        private void FillDropDown()
+        {
+            try
+            {
+
+                sc.Open();
+                cmd.Connection = sc;
+                cmd.CommandText = "BookProcedure";
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.Parameters.Clear();
+                cmd.Parameters.AddWithValue("@op", 4);
+                sdr = cmd.ExecuteReader();
+                DropDownListID.Items.Clear();
+                while (sdr.Read())
+                {
+                    DropDownListID.Items.Add(sdr[0].ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+
+                Response.Write(ex.Message);
+            }
+            finally
+            {
+                sc.Close();
+                
+            }
+        }
+
+        protected void btnUpdate_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                sc.Open();
+                cmd.Parameters.Clear();
+                cmd.Parameters.AddWithValue("@id", DropDownListID.SelectedItem.ToString());
+                cmd.Parameters.AddWithValue("@title", txt_title.Text);
+                cmd.Parameters.AddWithValue("@auth", txt_author.Text);
+                cmd.Parameters.AddWithValue("@desc", txt_description.Text);
+                cmd.Parameters.AddWithValue("@price", txt_price.Text);
+                cmd.Parameters.AddWithValue("@op", 2);
+                int i = cmd.ExecuteNonQuery();
+                if (i > 0)
+                {
+                    Response.Write("Record Updated");
+                    txt_title.Text = "";
+                    txt_author.Text = "";
+                    txt_description.Text = "";
+                    txt_price.Text = "";
+                }
+                else
+                {
+                    Response.Write("Something Went Wrong");
+                }
+            }         
+            catch (Exception ex)
+            {
+                Response.Write(ex.ToString());
+            }
+            finally
+            {
+                sc.Close();
+                FillDropDown();
+            }
+        }
+
+        protected void btnRemove_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                sc.Open();
+                cmd.Parameters.Clear();
+                
+                cmd.Parameters.AddWithValue("@id", DropDownListID.SelectedItem.ToString());
+                cmd.Parameters.AddWithValue("@op", 3);
+                int i = cmd.ExecuteNonQuery();
+                if (i > 0)
+                {
+                    Response.Write("Record Deleted");
+                    txt_title.Text = "";
+                    txt_author.Text = "";
+                    txt_description.Text = "";
+                    txt_price.Text = "";
+                }
+                else
+                {
+                    Response.Write("Something Went Wrong");
+                }
+            }
+            catch (Exception ex)
+            {
+                Response.Write(ex.ToString());
+            }
+            finally
+            {
+                sc.Close();
+                FillDropDown();
+            }
+        }
+
+        protected void DropDownListID_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+    }
+}
+
+
+step 9 :
